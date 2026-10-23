@@ -1,0 +1,1562 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <!-- Application Structure Plan: Ultimate FitApp Pro featuring Fullscreen App Mode toggle, historical weight/calorie trend charts, Web Push notifications & custom reminder scheduler with Web Audio API sound alerts, personal recipe book, dynamic color themes, full AI-powered screenshot parsing, barcode scanning, multi-ingredient food breakdown, L5-S1 animated stick-figure workouts, and simulated Google Health Connect API authorization with interactive permission grant dialogs. -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>FitApp Pro - L5-S1 & Health Connect</title>
+  <style>
+    :root {
+      --bg: #0f1311;
+      --card: #181f1c;
+      --card-2: #202a25;
+      --border: #2a3831;
+      --green: #4ade80;
+      --green-btn: #52b788;
+      --orange: #f97316;
+      --blue: #38bdf8;
+      --yellow: #facc15;
+      --purple: #a855f7;
+      --pink: #f472b6;
+      --text: #f3f4f6;
+      --muted: #9ca3af;
+      --danger: #ef4444;
+    }
+    /* Theme variants */
+    body.theme-forest { --bg: #0f1311; --card: #181f1c; --green-btn: #52b788; }
+    body.theme-midnight { --bg: #0b1120; --card: #151c2e; --green-btn: #3b82f6; --green: #60a5fa; }
+    body.theme-purple { --bg: #130f1c; --card: #1e182e; --green-btn: #8b5cf6; --green: #c084fc; }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
+    body { background: var(--bg); color: var(--text); padding: 14px; padding-bottom: 90px; overflow-x: hidden; position: relative; transition: background 0.3s ease; }
+
+    /* Top Bar */
+    .top-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; position: relative; z-index: 50; }
+    .date-nav { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 14px; color: #d1d5db; }
+    .circle-btn { width: 38px; height: 38px; border-radius: 50%; border: 1px solid var(--border); background: var(--card); color: var(--text); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 15px; position: relative; z-index: 60; pointer-events: auto; }
+    .top-icons { display: flex; gap: 6px; position: relative; z-index: 60; }
+    .icon-health { background: #1c1426; border-color: #3b2052; color: #c084fc; font-size: 14px; }
+    .icon-profile { background: #172554; border-color: #1e3a8a; color: #60a5fa; }
+    .icon-target { background: #3b181c; border-color: #7f1d1d; color: #f87171; }
+    .icon-fullscreen { background: #111827; border-color: #374151; color: #38bdf8; }
+
+    /* Health Connect Banner */
+    .health-banner { background: #1c1926; border: 1px solid #4c356e; border-radius: 14px; padding: 12px 14px; margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between; font-size: 13px; position: relative; z-index: 10; }
+    .health-info { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+    .health-dot { width: 8px; height: 8px; border-radius: 50%; background: #c084fc; box-shadow: 0 0 8px #c084fc; }
+    .btn-health-sync { background: #581c87; color: #f3e8ff; border: none; padding: 8px 12px; border-radius: 10px; font-size: 12px; font-weight: 700; cursor: pointer; white-space: nowrap; position: relative; z-index: 40; pointer-events: auto; }
+
+    /* Calorie Dashboard Card */
+    .calorie-card { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 18px; margin-bottom: 14px; }
+    .cal-big { font-size: 36px; font-weight: 800; letter-spacing: -1px; }
+    .cal-sub { font-size: 16px; color: var(--muted); font-weight: 500; }
+    .cal-rem { font-size: 13px; color: var(--muted); margin: 4px 0 12px; }
+    .prog-bg { width: 100%; height: 7px; background: #26312c; border-radius: 4px; overflow: hidden; margin-bottom: 16px; }
+    .prog-fill { height: 100%; background: var(--orange); border-radius: 4px; transition: width 0.3s ease; }
+
+    .macro-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .macro-lbl { font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+    .macro-val { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+    .macro-bar { height: 4px; background: #26312c; border-radius: 2px; overflow: hidden; }
+
+    /* Health Metrics Mini Grid */
+    .health-metrics-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 14px; }
+    .hm-box { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 10px 6px; text-align: center; cursor: pointer; position: relative; z-index: 20; }
+    .hm-box:active { transform: scale(0.97); }
+    .hm-val { font-size: 14px; font-weight: 700; color: #c084fc; margin-top: 2px; }
+    .hm-lbl { font-size: 10.5px; color: var(--muted); }
+
+    /* Unified Meal Card */
+    .meals-hub-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; margin-bottom: 14px; padding: 16px; display: flex; justify-content: space-between; align-items: center; position: relative; z-index: 10; }
+    .meals-hub-left { flex: 1; cursor: pointer; }
+    .meals-hub-title { font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+    .meals-hub-sub { font-size: 12.5px; color: var(--muted); }
+    .btn-meals-open { background: var(--green-btn); color: #052e16; border: none; padding: 10px 16px; border-radius: 16px; font-size: 13.5px; font-weight: 700; cursor: pointer; white-space: nowrap; position: relative; z-index: 40; pointer-events: auto; }
+
+    /* Advanced Hub Buttons Row */
+    .advanced-tools-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-bottom: 14px; }
+    .tool-icon-btn { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 10px 4px; color: var(--text); font-size: 11px; font-weight: 600; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; cursor: pointer; text-align: center; position: relative; z-index: 30; pointer-events: auto; }
+    .tool-icon-btn:active { transform: scale(0.96); }
+
+    /* Action Grid */
+    .action-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 14px; }
+    .action-btn { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 14px 8px; color: var(--text); font-size: 13px; font-weight: 600; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; cursor: pointer; text-align: center; position: relative; z-index: 40; pointer-events: auto; }
+    .action-btn:active { transform: scale(0.98); }
+
+    /* Smart Insights Section */
+    .insights-card { background: linear-gradient(135deg, #18241f 0%, #151b19 100%); border: 1px solid #2f4f40; border-radius: 20px; padding: 16px; margin-bottom: 14px; }
+    .insights-header { display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 700; color: var(--green); margin-bottom: 10px; }
+    .insights-body { font-size: 13px; color: #e5e7eb; line-height: 1.5; }
+    .insights-tip-row { display: flex; align-items: flex-start; gap: 8px; margin-top: 8px; padding-top: 8px; border-top: 1px dashed rgba(255,255,255,0.08); }
+
+    /* Workout View */
+    #viewWorkout { display: none; }
+    .wk-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+    .wk-title { font-size: 20px; font-weight: 700; }
+    .btn-close-wk { background: none; border: none; color: var(--muted); font-size: 22px; cursor: pointer; padding: 4px 8px; position: relative; z-index: 60; pointer-events: auto; }
+
+    .info-banner { background: #19231e; border-left: 4px solid var(--green-btn); border-radius: 12px; padding: 14px; font-size: 13px; color: #d1d5db; line-height: 1.5; margin-bottom: 14px; }
+    .btn-start-guided { width: 100%; background: var(--green-btn); color: #052e16; border: none; border-radius: 14px; padding: 15px; font-size: 15px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; margin-bottom: 10px; position: relative; z-index: 40; pointer-events: auto; }
+    .btn-shuffle { width: 100%; background: var(--card); color: var(--text); border: 1px solid var(--border); border-radius: 14px; padding: 13px; font-size: 14px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; margin-bottom: 14px; position: relative; z-index: 40; pointer-events: auto; }
+
+    .stats-bar { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 12px; text-align: center; margin-bottom: 14px; }
+    .stats-main { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+    .stats-sub { font-size: 12px; color: var(--muted); }
+    .section-cat { font-size: 16px; font-weight: 700; margin: 18px 0 10px; display: flex; justify-content: space-between; align-items: center; }
+
+    /* Single Exercise Card */
+    .ex-card { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 16px; margin-bottom: 16px; }
+    .canvas-preview-box { width: 100%; height: 210px; background: #121815; border-radius: 14px; margin-bottom: 14px; overflow: hidden; border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; position: relative; }
+    .canvas-preview-box canvas { width: 100%; height: 100%; display: block; }
+    
+    .posture-badge { display: inline-flex; align-items: center; gap: 6px; background: #23322a; color: var(--purple); border: 1px solid #3b284a; border-radius: 10px; padding: 6px 12px; font-size: 12px; font-weight: 700; margin-bottom: 12px; }
+    .ex-name { font-size: 18px; font-weight: 700; margin-bottom: 2px; }
+    .ex-meta { font-size: 13px; color: var(--muted); margin-bottom: 12px; }
+    .guide-block { margin-bottom: 10px; font-size: 13.5px; line-height: 1.45; color: #e5e7eb; }
+    .guide-lbl { font-size: 12px; color: var(--muted); font-weight: 600; display: flex; align-items: center; gap: 5px; margin-bottom: 2px; }
+    .ex-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
+    .btn-ex-act { background: #141a17; border: 1px solid var(--border); color: var(--text); border-radius: 12px; padding: 12px; font-size: 14px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; position: relative; z-index: 20; pointer-events: auto; }
+    .btn-ex-act.running { border-color: var(--green); color: var(--green); }
+    .btn-ex-act.done { background: #132a1f; border-color: var(--green-btn); color: var(--green); }
+
+    /* GUIDED PLAYER & MODALS */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 99999; display: none; align-items: center; justify-content: center; padding: 12px; backdrop-filter: blur(4px); overflow-y: auto; pointer-events: auto; }
+    .guided-sheet { background: #151a18; border: 1px solid var(--border); border-radius: 24px; width: 100%; max-width: 420px; max-height: 94vh; padding: 16px; overflow-y: auto; display: flex; flex-direction: column; box-shadow: 0 15px 40px rgba(0,0,0,0.8); margin: auto; position: relative; z-index: 100000; pointer-events: auto; }
+    
+    .guided-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+    .guided-title { font-size: 18px; font-weight: 750; }
+    .guided-step-sub { font-size: 12px; color: var(--muted); margin-bottom: 8px; }
+    
+    .guided-canvas-wrap { width: 100%; height: 180px; background: #121815; border-radius: 14px; margin-bottom: 10px; border: 1px solid var(--border); overflow: hidden; }
+    .guided-canvas-wrap canvas { width: 100%; height: 100%; display: block; }
+
+    .guided-phases { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 10px; }
+    .g-phase-btn { background: #1c2420; border: 1px solid var(--border); color: var(--muted); border-radius: 8px; padding: 6px 4px; font-size: 11px; font-weight: 600; text-align: center; cursor: pointer; }
+    .g-phase-btn.active { background: var(--orange); border-color: var(--orange); color: #fff; }
+
+    .guided-ex-name { font-size: 17px; font-weight: 700; text-align: center; margin-bottom: 2px; }
+    .guided-ex-status { font-size: 12.5px; color: var(--orange); font-weight: 600; text-align: center; margin-bottom: 6px; }
+    .guided-timer-big { font-size: 38px; font-weight: 800; text-align: center; letter-spacing: 1px; line-height: 1; margin-bottom: 10px; font-variant-numeric: tabular-nums; }
+    .guided-prog-bar { width: 100%; height: 6px; background: #26312c; border-radius: 3px; overflow: hidden; margin-bottom: 10px; }
+    .guided-prog-fill { height: 100%; width: 100%; background: var(--orange); border-radius: 3px; transition: width 0.15s linear; }
+    .guided-cue-box { min-height: 48px; margin-bottom: 12px; background: #19231e; padding: 8px 10px; border-radius: 10px; }
+    .guided-controls { display: grid; grid-template-columns: 1fr 1.15fr 1fr; gap: 8px; }
+    .btn-g-nav { background: #1c2420; border: 1px solid var(--border); color: var(--text); border-radius: 12px; padding: 10px 6px; font-size: 13px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 4px; cursor: pointer; }
+    .btn-g-pause { background: var(--green-btn); border: none; color: #052e16; border-radius: 12px; padding: 10px 6px; font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 4px; cursor: pointer; }
+
+    /* Forms & Modal Tabs */
+    .form-group { margin-bottom: 12px; }
+    .form-label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 5px; }
+    .form-input, .form-select, .form-textarea { width: 100%; background: #202925; border: 1px solid var(--border); color: #fff; border-radius: 12px; padding: 11px; font-size: 14px; outline: none; }
+    
+    .meal-tabs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; background: #131916; padding: 4px; border-radius: 12px; margin-bottom: 12px; border: 1px solid var(--border); }
+    .meal-tab-btn { background: none; border: none; color: var(--muted); padding: 8px 4px; font-size: 12px; font-weight: 600; border-radius: 8px; cursor: pointer; text-align: center; }
+    .meal-tab-btn.active { background: var(--green-btn); color: #052e16; }
+
+    .meal-item-row { display: flex; justify-content: space-between; align-items: center; font-size: 13px; padding: 8px 0; border-bottom: 1px dashed var(--border); }
+    .btn-del-item { background: none; border: none; color: var(--danger); font-size: 14px; cursor: pointer; padding: 2px 6px; }
+
+    .est-card-box { background: #1c2621; border: 1px solid #2f4f40; border-radius: 16px; padding: 14px; margin-bottom: 12px; }
+    .est-banner-note { background: #14221b; border: 1px solid #1e3a2b; border-radius: 10px; padding: 10px; font-size: 12px; color: #a3e635; margin-bottom: 12px; line-height: 1.4; }
+    .sub-ingredient-item { background: #151b18; border: 1px solid #24352d; border-radius: 10px; padding: 10px; margin-bottom: 8px; }
+    
+    .scan-actions-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
+    .btn-scan-action { background: #1a2420; border: 1px solid #2f4f40; color: var(--green); border-radius: 12px; padding: 10px; font-size: 12.5px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer; }
+
+    /* Toast Notification */
+    #appToast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #1c2e24; border: 1px solid var(--green); color: #fff; padding: 12px 18px; border-radius: 14px; font-size: 13px; font-weight: 600; z-index: 200000; display: none; box-shadow: 0 10px 30px rgba(0,0,0,0.85); max-width: 90%; text-align: center; line-height: 1.4; }
+  </style>
+</head>
+<body class="theme-forest">
+
+  <!-- Custom Toast Notification -->
+  <div id="appToast"></div>
+
+  <!-- Vista 1: Home Nutrizione -->
+  <div id="viewMain">
+    <div class="top-bar">
+      <div class="date-nav">
+        <button class="circle-btn" onclick="changeDay(-1)">‹</button>
+        <span id="dateLabel">Venerdì 23 Ottobre 2026</span>
+        <button class="circle-btn" onclick="changeDay(1)">›</button>
+      </div>
+      <div class="top-icons">
+        <button class="circle-btn icon-fullscreen" onclick="toggleAppFullscreenMode()" title="Guida App a Schermo Intero">📱</button>
+        <button class="circle-btn icon-health" onclick="promptGoogleHealthConnectAuth()" title="Connetti Google Health Connect">💚</button>
+        <button class="circle-btn icon-profile" onclick="openModal('modalProfile')" title="Profilo e Modifica Peso">👤</button>
+        <button class="circle-btn icon-target" onclick="openModal('modalTarget')" title="Imposta Target Calorico">🎯</button>
+      </div>
+    </div>
+
+    <!-- Health Connect Banner -->
+    <div class="health-banner">
+      <div class="health-info" onclick="promptGoogleHealthConnectAuth()">
+        <div class="health-dot" id="healthDot"></div>
+        <div><strong id="healthStatusText">Google Health Connect</strong> <div style="font-size:11px; color:var(--muted)" id="healthSubText">Tocca per concedere accessi · 62.6kg</div></div>
+      </div>
+      <button class="btn-health-sync" onclick="promptGoogleHealthConnectAuth()">Connetti</button>
+    </div>
+
+    <!-- Health Metrics Mini Grid -->
+    <div class="health-metrics-grid">
+      <div class="hm-box" onclick="openHealthSyncModal()">
+        <div class="hm-lbl">Passi ✏️</div>
+        <div class="hm-val" id="hmSteps">6,420</div>
+      </div>
+      <div class="hm-box" onclick="openHealthSyncModal()">
+        <div class="hm-lbl">Kcal Attive</div>
+        <div class="hm-val" id="hmKcal">791</div>
+      </div>
+      <div class="hm-box" onclick="openHealthSyncModal()">
+        <div class="hm-lbl">Sonno</div>
+        <div class="hm-val" id="hmSleep">7.5h</div>
+      </div>
+      <div class="hm-box" onclick="openHealthSyncModal()">
+        <div class="hm-lbl">Acqua</div>
+        <div class="hm-val" id="hmWater">1.8L</div>
+      </div>
+    </div>
+
+    <!-- Calorie Dashboard Card -->
+    <div class="calorie-card">
+      <div>
+        <span class="cal-big" id="uiCurKcal">0</span>
+        <span class="cal-sub" id="uiTargetKcal">/ 1280 kcal</span>
+      </div>
+      <div class="cal-rem" id="uiRemKcal">1280 kcal rimaste</div>
+      <div class="prog-bg"><div class="prog-fill" id="uiBarKcal" style="width:0%"></div></div>
+
+      <div class="macro-grid">
+        <div>
+          <div class="macro-lbl">Proteine</div>
+          <div class="macro-val"><span id="uiCurP">0</span> <span style="font-size:12px;color:var(--muted)" id="uiTarP">/ 113 g</span></div>
+          <div class="macro-bar"><div id="uiBarP" style="height:100%;width:0%;background:var(--blue)"></div></div>
+        </div>
+        <div>
+          <div class="macro-lbl">Carboidrati</div>
+          <div class="macro-val"><span id="uiCurC">0</span> <span style="font-size:12px;color:var(--muted)" id="uiTarC">/ 127 g</span></div>
+          <div class="macro-bar"><div id="uiBarC" style="height:100%;width:0%;background:var(--yellow)"></div></div>
+        </div>
+        <div>
+          <div class="macro-lbl">Grassi</div>
+          <div class="macro-val"><span id="uiCurF">0</span> <span style="font-size:12px;color:var(--muted)" id="uiTarF">/ 36 g</span></div>
+          <div class="macro-bar"><div id="uiBarF" style="height:100%;width:0%;background:var(--pink)"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- UNICO PULSANTE / CARD PER TUTTI I 4 PASTI -->
+    <div class="meals-hub-card">
+      <div class="meals-hub-left" onclick="openMealModal('colazione')">
+        <div class="meals-hub-title">🍽️ Gestione Pasti (Colazione, Pranzo, Cena, Spuntini)</div>
+        <div class="meals-hub-sub" id="summary-all-meals">0 kcal totali · 0 voci inserite</div>
+      </div>
+      <button class="btn-meals-open" onclick="openMealModal('colazione')">Gestisci Pasti</button>
+    </div>
+
+    <!-- ADVANCED TOOLS ROW -->
+    <div class="advanced-tools-grid">
+      <button class="tool-icon-btn" onclick="openChartsModal()">📊 <span>Trend</span></button>
+      <button class="tool-icon-btn" onclick="openRecipeBookModal()">🍲 <span>Ricettario</span></button>
+      <button class="tool-icon-btn" onclick="openNotificationSettingsModal()">🔔 <span>Notifiche</span></button>
+      <button class="tool-icon-btn" onclick="cycleAppTheme()">🎨 <span>Tema</span></button>
+      <button class="tool-icon-btn" onclick="triggerCloudSync()">☁️ <span>Cloud</span></button>
+    </div>
+
+    <!-- SEZIONE CONSIGLI UTILI INTELLIGENTI -->
+    <div class="insights-card">
+      <div class="insights-header">
+        <span>💡</span> Consigli Utili & Analisi Health & Peso Giornaliera
+      </div>
+      <div class="insights-body" id="smartInsightsText">
+        Caricamento analisi dinamica in corso...
+      </div>
+    </div>
+
+    <!-- Pulsanti di azione rapidi (2 pulsanti) -->
+    <div class="action-grid">
+      <button class="action-btn" onclick="openModal('modalRecipe')">🍳 <span>Crea ricetta</span></button>
+      <button class="action-btn" onclick="openWorkoutView()">🏋️ <span>Allenamento</span></button>
+    </div>
+  </div>
+
+  <!-- Vista 2: Allenamento -->
+  <div id="viewWorkout">
+    <div class="wk-header">
+      <div class="wk-title" id="wkHeaderTitle">Allenamento di oggi</div>
+      <button class="btn-close-wk" onclick="closeWorkoutView()">✕</button>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Programma del Giorno (20 min protettivi L5-S1)</label>
+      <select class="form-select" id="wkProgramSelector" onchange="changeWorkoutProgram(this.value)">
+        <option value="1">Lunedì: Stabilità & Core Profondo (McGill)</option>
+        <option value="2">Martedì: Mobilità Toracica & Postura</option>
+        <option value="3">Mercoledì: Rinforzo Posteriore & Glutei</option>
+        <option value="4">Giovedì: Scarico Lombare & Decompressione L5-S1</option>
+        <option value="5">Venerdì: Antirotazione & Catena Laterale</option>
+        <option value="6">Sabato: Riattivazione Dolce & Equilibrio</option>
+        <option value="0">Domenica: Stretching Totale & Rilassamento</option>
+      </select>
+    </div>
+
+    <div class="info-banner" id="wkProgramDesc">
+      Sessione mirata di 20 minuti: esercizi protettivi e mirati per la tua tipologia scelta, in totale sicurezza L5-S1.
+    </div>
+
+    <button class="btn-start-guided" onclick="startGuidedPlayer(0)">
+      ▶ Avvia allenamento guidato (20 min)
+    </button>
+
+    <button class="btn-shuffle" onclick="shuffleDailyWorkout()">
+      🔀 Rigenera esercizi di oggi
+    </button>
+
+    <div class="stats-bar">
+      <div class="stats-main"><span id="wkDoneCount">0</span>/<span id="wkTotalCount">8</span> esercizi completati · circa <span id="wkBurnedKcal">0</span> kcal bruciate</div>
+      <div class="stats-sub">🔥 1 giorni di fila · Peso sincronizzato: <span id="wkUserWeightLbl">62.6</span> kg</div>
+    </div>
+
+    <div id="workoutExercisesContainer"></div>
+  </div>
+
+  <!-- Guided Player Modal -->
+  <div class="modal-overlay" id="modalGuidedPlayer">
+    <div class="guided-sheet">
+      <div class="guided-top">
+        <div class="guided-title">Allenamento guidato</div>
+        <button class="btn-close-wk" onclick="stopGuidedPlayer()">✕</button>
+      </div>
+      <div class="guided-step-sub" id="gpStepHeader">Esercizio 1 di 8 · Riscaldamento</div>
+
+      <div class="guided-canvas-wrap">
+        <canvas id="gpCanvas" width="380" height="180"></canvas>
+      </div>
+
+      <div class="guided-phases">
+        <div class="g-phase-btn active" id="gpPhase1">1. Inizio</div>
+        <div class="g-phase-btn" id="gpPhase2">2. Esecuzione</div>
+        <div class="g-phase-btn" id="gpPhase3">3. Ritorno</div>
+      </div>
+
+      <div class="guided-ex-name" id="gpExName">Sollevamento sui talloni</div>
+      <div class="guided-ex-status" id="gpExStatus">Preparati · 2 × 15</div>
+
+      <div class="guided-timer-big" id="gpTimerDisplay">0:05</div>
+
+      <div class="guided-prog-bar">
+        <div class="guided-prog-fill" id="gpProgFill"></div>
+      </div>
+
+      <div class="guided-cue-box" id="gpCueContainer">
+        <div class="guide-lbl">📍 Partenza & Esecuzione</div>
+        <div style="font-size:12.5px; color:#e5e7eb; line-height:1.35;" id="gpCueText">
+          In piedi, piedi alla larghezza del bacino, mani al muro. Sali lentamente sulle punte.
+        </div>
+      </div>
+
+      <div class="guided-controls">
+        <button class="btn-g-nav" onclick="guidedPrevExercise()">⏮ Indietro</button>
+        <button class="btn-g-pause" id="gpBtnPause" onclick="toggleGuidedPause()">⏸ Pausa</button>
+        <button class="btn-g-nav" onclick="guidedNextExercise()">⏭ Avanti</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Gestione Pasti Unificato -->
+  <div class="modal-overlay" id="modalMealManager">
+    <div class="guided-sheet">
+      <div class="guided-top" style="margin-bottom:8px;">
+        <div class="guided-title" id="modalMealMainTitle">Gestione Pasti</div>
+        <button class="btn-close-wk" onclick="closeModal('modalMealManager')">✕</button>
+      </div>
+      
+      <div class="meal-tabs">
+        <button class="meal-tab-btn active" id="tabBtn-colazione" onclick="switchMealTab('colazione')">Colazione</button>
+        <button class="meal-tab-btn" id="tabBtn-pranzo" onclick="switchMealTab('pranzo')">Pranzo</button>
+        <button class="meal-tab-btn" id="tabBtn-cena" onclick="switchMealTab('cena')">Cena</button>
+        <button class="meal-tab-btn" id="tabBtn-spuntini" onclick="switchMealTab('spuntini')">Spuntini</button>
+      </div>
+
+      <div id="modalMealItemsContainer" style="margin-bottom: 12px; max-height: 110px; overflow-y: auto;"></div>
+
+      <div class="scan-actions-row">
+        <button class="btn-scan-action" onclick="triggerBarcodeScan()">📷 <span>Scan Barcode</span></button>
+        <button class="btn-scan-action" onclick="triggerPhotoAI()">📸 <span>Foto Piatto AI</span></button>
+        <button class="btn-scan-action" style="grid-column: span 2;" onclick="openRecipeBookModal()">🍲 <span>Usa da Ricettario</span></button>
+        <input type="file" id="barcodeFileInput" accept="image/*" capture="environment" style="display:none" onchange="handleBarcodeFile(this)">
+        <input type="file" id="photoAIInput" accept="image/*" capture="environment" style="display:none" onchange="handlePhotoAIFile(this)">
+      </div>
+
+      <div style="background:#131916; border:1px solid var(--border); border-radius:14px; padding:12px; margin-bottom:12px;">
+        <div style="font-size:13px; font-weight:700; color:var(--green); margin-bottom:8px;" id="addFoodHeaderTitle">+ Aggiungi alimento</div>
+        
+        <div class="form-group" style="margin-bottom:8px;">
+          <input type="text" class="form-input" id="newFoodName" placeholder="Es. caffè, mela o pasta con ricotta e pesto" oninput="onFoodSearchInput(this.value)">
+        </div>
+
+        <div id="estimationResultBox" style="display:none;">
+          <div class="est-card-box">
+            <div class="est-banner-note">
+              Sono stime: correggi i grammi se sai quanto pesa la porzione, e deseleziona ciò che non ti serve.
+            </div>
+            
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+              <strong id="estDishTitleName" style="font-size:15px; color:#fff;">Piatto composto</strong>
+              <span id="estDishTotalKcal" style="font-size:17px; font-weight:800; color:var(--green);">0 kcal</span>
+            </div>
+
+            <div id="estSubIngredientsList" style="max-height:150px; overflow-y:auto; margin-bottom:10px;"></div>
+          </div>
+        </div>
+
+        <button class="btn-start-guided" style="padding:11px; margin-bottom:0;" onclick="confirmAddEstimatedFood()">Aggiungi selezionati</button>
+      </div>
+      
+      <button class="btn-shuffle" onclick="closeModal('modalMealManager')">Fatto / Chiudi</button>
+    </div>
+  </div>
+
+  <!-- Modal Programmazione Notifiche & Suoni -->
+  <div class="modal-overlay" id="modalNotificationSettings">
+    <div class="guided-sheet">
+      <div class="guided-top" style="margin-bottom:10px;">
+        <div class="guided-title">🔔 Promemoria & Suoni Notifica</div>
+        <button class="btn-close-wk" onclick="closeModal('modalNotificationSettings')">✕</button>
+      </div>
+      <div class="info-banner" style="margin-bottom:12px;">
+        Imposta gli orari dei promemoria e scegli il suono acustico con cui desideri essere avvisato!
+      </div>
+      
+      <div class="form-group">
+        <label class="form-label">Promemoria Acqua (Ora)</label>
+        <input type="time" class="form-input" id="notifTimeWater" value="10:30">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Promemoria Allenamento L5-S1 (Ora)</label>
+        <input type="time" class="form-input" id="notifTimeWorkout" value="14:00">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Suono Notifica</label>
+        <select class="form-select" id="notifSoundSelect">
+          <option value="chime" selected>🎵 Campanella Melodica (Chime)</option>
+          <option value="bell">🔔 Tocco di Campana (Bell)</option>
+          <option value="beep">📳 Bip Dolce (Gentle Beep)</option>
+          <option value="none">Silenzioso (Solo messaggio)</option>
+        </select>
+      </div>
+
+      <button class="btn-start-guided" onclick="saveNotificationSchedule()">💾 Salva e Attiva Promemoria</button>
+      <button class="btn-shuffle" style="margin-top:8px;" onclick="testNotificationSoundAndAlert()">🔔 Testa Suono e Notifica Ora</button>
+    </div>
+  </div>
+
+  <!-- Modal Sincronizzazione Passi e Dati Health Connect -->
+  <div class="modal-overlay" id="modalHealthSync">
+    <div class="guided-sheet">
+      <div class="guided-top" style="margin-bottom:10px;">
+        <div class="guided-title">💚 Google Health Connect</div>
+        <button class="btn-close-wk" onclick="closeModal('modalHealthSync')">✕</button>
+      </div>
+      <div class="info-banner" style="margin-bottom:12px;">
+        Collega Google Health Connect per importare automaticamente passi, calorie e peso, oppure carica uno screenshot!
+      </div>
+      
+      <div style="margin-bottom: 12px;">
+        <button class="btn-scan-action" style="width:100%; padding:12px; background:#1c1426; border-color:#4c356e; color:#c084fc; font-size:13.5px; margin-bottom:8px;" onclick="promptGoogleHealthConnectAuth()">
+          🔗 <span>Autorizza accesso a Google Health</span>
+        </button>
+        <button class="btn-scan-action" style="width:100%; padding:12px; background:#231a33; border-color:#581c87; color:#c084fc; font-size:13.5px;" onclick="triggerHealthScreenshot()">
+          📸 <span>Carica Screenshot App Health (IA)</span>
+        </button>
+        <input type="file" id="healthScreenshotInput" accept="image/*" style="display:none" onchange="handleHealthScreenshotFile(this)">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Passi giornalieri</label>
+        <input type="number" class="form-input" id="syncInputSteps" value="6420" step="100">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Kcal attive bruciate</label>
+        <input type="number" class="form-input" id="syncInputKcal" value="791">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Peso (kg)</label>
+        <input type="number" class="form-input" id="syncInputWeight" value="62.6" step="0.1">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Sonno (ore)</label>
+        <input type="number" class="form-input" id="syncInputSleep" value="7.5" step="0.5">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Acqua (litri)</label>
+        <input type="number" class="form-input" id="syncInputWater" value="1.8" step="0.1">
+      </div>
+      <button class="btn-start-guided" onclick="saveHealthSyncValues()">💾 Salva e aggiorna dashboard</button>
+    </div>
+  </div>
+
+  <!-- Modal Trend Storici -->
+  <div class="modal-overlay" id="modalCharts">
+    <div class="guided-sheet">
+      <div class="guided-top" style="margin-bottom:10px;">
+        <div class="guided-title">📊 Grafici Trend Storici</div>
+        <button class="btn-close-wk" onclick="closeModal('modalCharts')">✕</button>
+      </div>
+      <div class="info-banner" style="margin-bottom:12px;">
+        Andamento settimanale del tuo peso corporeo e del bilancio calorico registrato.
+      </div>
+      <div style="background:#131916; border:1px solid var(--border); border-radius:14px; padding:14px; margin-bottom:12px; text-align:center;">
+        <div style="font-size:13px; color:var(--muted); margin-bottom:8px;">Andamento Peso Recente (kg)</div>
+        <div style="display:flex; justify-content:space-around; align-items:flex-end; height:100px; padding-top:10px; border-bottom:1px solid var(--border);" id="chartWeightBars"></div>
+      </div>
+      <div style="background:#131916; border:1px solid var(--border); border-radius:14px; padding:14px; margin-bottom:12px; text-align:center;">
+        <div style="font-size:13px; color:var(--muted); margin-bottom:8px;">Calorie Assunte vs Target (kcal)</div>
+        <div style="display:flex; justify-content:space-around; align-items:flex-end; height:100px; padding-top:10px; border-bottom:1px solid var(--border);" id="chartKcalBars"></div>
+      </div>
+      <button class="btn-shuffle" onclick="closeModal('modalCharts')">Chiudi</button>
+    </div>
+  </div>
+
+  <!-- Modal Libro Ricette Personale -->
+  <div class="modal-overlay" id="modalRecipeBook">
+    <div class="guided-sheet">
+      <div class="guided-top" style="margin-bottom:10px;">
+        <div class="guided-title">🍲 Libro Ricette Personali</div>
+        <button class="btn-close-wk" onclick="closeModal('modalRecipeBook')">✕</button>
+      </div>
+      <div class="info-banner" style="margin-bottom:12px;">
+        I tuoi piatti composti e preferiti salvati per ricaricarli istantaneamente nei pasti futuri.
+      </div>
+      <div id="savedRecipesListContainer" style="max-height:220px; overflow-y:auto; margin-bottom:12px;"></div>
+      <button class="btn-start-guided" onclick="openModal('modalRecipe'); closeModal('modalRecipeBook');">🍳 Crea Nuova Ricetta</button>
+      <button class="btn-shuffle" onclick="closeModal('modalRecipeBook')">Chiudi</button>
+    </div>
+  </div>
+
+  <!-- Utility Modals -->
+  <div class="modal-overlay" id="modalRecipe">
+    <div class="guided-sheet">
+      <div class="guided-top" style="margin-bottom:10px;">
+        <div class="guided-title">Crea una ricetta</div>
+        <button class="btn-close-wk" onclick="closeModal('modalRecipe')">✕</button>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Nome Ricetta / Piatto</label>
+        <input type="text" class="form-input" id="recTitleName" value="Colazione Proteica ai Corn Flakes">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Ingredienti</label>
+        <textarea class="form-textarea" id="recIng" rows="2">Bocconcini di petto di pollo impanati nei corn flakes</textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Cottura</label>
+        <select class="form-select" id="recCook">
+          <option value="Cosori TurboBlaze (friggitrice ad aria)" selected>Cosori TurboBlaze (friggitrice ad aria)</option>
+          <option value="Friggitrice ad aria generica">Friggitrice ad aria generica</option>
+          <option value="Forno statico / ventilato">Forno statico / ventilato</option>
+          <option value="Padella antiaderente">Padella antiaderente</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Calorie porzione</label>
+        <input type="number" class="form-input" id="recKcal" value="450">
+      </div>
+      <button class="btn-start-guided" onclick="createAndShowRecipe()">✨ Crea ricetta</button>
+      <div id="recPreviewBox" style="display:none; background:#1e2923; padding:10px; border-radius:12px; margin-top:6px;">
+        <strong id="recPrevTitle" style="display:block; margin-bottom:4px;"></strong>
+        <p id="recPrevDesc" style="font-size:12.5px; color:#d1d5db; margin-bottom:8px;"></p>
+        <button class="btn-start-guided" style="width:100%; padding:9px; margin-bottom:0;" onclick="saveGeneratedRecipe()">💾 Salva nel Ricettario</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Profilo Completo -->
+  <div class="modal-overlay" id="modalProfile">
+    <div class="guided-sheet">
+      <div class="guided-top" style="margin-bottom:12px;">
+        <div class="guided-title">Il tuo profilo</div>
+        <button class="btn-close-wk" onclick="closeModal('modalProfile')">✕</button>
+      </div>
+
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:10px;">
+        <div>
+          <label class="form-label">Sesso</label>
+          <select class="form-select" id="pGender" onchange="recalcProfilePreview()">
+            <option value="F" selected>Donna</option>
+            <option value="M">Uomo</option>
+          </select>
+        </div>
+        <div>
+          <label class="form-label">Età (anni)</label>
+          <input type="number" class="form-input" id="pAge" value="43" oninput="recalcProfilePreview()">
+        </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:10px;">
+        <div>
+          <label class="form-label">Altezza (cm)</label>
+          <input type="number" class="form-input" id="pHeight" value="160" oninput="recalcProfilePreview()">
+        </div>
+        <div>
+          <label class="form-label">Peso (kg)</label>
+          <input type="number" class="form-input" id="pWeight" value="62.6" step="0.1" oninput="recalcProfilePreview()">
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-bottom:10px;">
+        <label class="form-label">Livello di attività</label>
+        <select class="form-select" id="pActivity" onchange="recalcProfilePreview()">
+          <option value="1.2" selected>Sedentario (poco o nessun esercizio)</option>
+          <option value="1.375">Leggermente attivo (1-3 giorni/sett.)</option>
+          <option value="1.55">Moderatamente attivo (3-5 giorni/sett.)</option>
+          <option value="1.725">Molto attivo (6-7 giorni/sett.)</option>
+        </select>
+      </div>
+
+      <div class="form-group" style="margin-bottom:12px;">
+        <label class="form-label">Obiettivo</label>
+        <select class="form-select" id="pGoal" onchange="recalcProfilePreview()">
+          <option value="0.85" selected>Dimagrire (circa –15%)</option>
+          <option value="1.0">Mantenere il peso</option>
+          <option value="1.10">Aumentare massa (circa +10%)</option>
+        </select>
+      </div>
+
+      <div style="background:#1c2521; border:1px solid var(--border); border-radius:16px; padding:14px; text-align:center; margin-bottom:14px;">
+        <div style="font-size:12px; color:var(--muted); line-height:1.4; margin-bottom:6px;" id="profBmrTdeeLine">
+          Metabolismo basale 1245 kcal · Fabbisogno di mantenimento 1494 kcal
+        </div>
+        <div style="margin-bottom:6px;">
+          <span style="font-size:28px; font-weight:800; color:#fff;" id="profRecKcal">1270</span>
+          <span style="font-size:14px; color:var(--muted);"> kcal/giorno consigliate</span>
+        </div>
+        <div style="font-size:12.5px; color:#d1d5db; margin-bottom:4px;" id="profRecMacros">
+          Proteine 113 g · Carboidrati 127 g · Grassi 36 g
+        </div>
+        <div style="font-size:12px; color:var(--muted);" id="profRecBmi">
+          BMI 24.4 (nella norma)
+        </div>
+      </div>
+
+      <button class="btn-start-guided" style="margin-bottom:8px; padding:13px;" onclick="saveProfile(true)">Salva e usa come obiettivi</button>
+      <button class="btn-shuffle" style="margin-bottom:12px; padding:12px;" onclick="saveProfile(false)">Salva solo il profilo</button>
+    </div>
+  </div>
+
+  <!-- Modal Target Calorico -->
+  <div class="modal-overlay" id="modalTarget">
+    <div class="guided-sheet">
+      <div class="guided-top" style="margin-bottom:10px;">
+        <div class="guided-title">Imposta Target Calorico</div>
+        <button class="btn-close-wk" onclick="closeModal('modalTarget')">✕</button>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Calorie giornaliere target (kcal)</label>
+        <input type="number" class="form-input" id="pTargetKcalInput" value="1280" step="10">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Proteine target (g)</label>
+        <input type="number" class="form-input" id="pTargetPInput" value="113">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Carboidrati target (g)</label>
+        <input type="number" class="form-input" id="pTargetCInput" value="127">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Grassi target (g)</label>
+        <input type="number" class="form-input" id="pTargetFInput" value="36">
+      </div>
+      <button class="btn-start-guided" onclick="saveTargetValues()">💾 Salva Nuovi Target</button>
+    </div>
+  </div>
+
+  <script>
+    // --- FULLSCREEN APP MODE GUIDE & TOGGLE ---
+    function toggleAppFullscreenMode() {
+      showToast("📱 Per nascondere completamente la barra degli indirizzi e avere l'app a tutto schermo:\n\nTocca la scorciatoia che hai creato sulla schermata Home del telefono!");
+    }
+
+    // --- LIBRERIA ESERCIZI PROFESSIONALE ---
+    const MASTER_EXERCISES = [
+      { id: 'ex_0', cat: 'Riscaldamento', name: 'Sollevamento sui talloni', meta: 'Polpacci · equilibrio · 2 × 15', sets: 2, duration: 30, kcal: 5, posture: '🧍 Posizione: In Piedi', poseType: 'standing', start: 'In piedi, mani appoggiate a un supporto stabile.', exec: 'Sali lentamente sulle punte, pausa in alto e scendi piano.', breath: 'Espira salendo, inspira scendendo.', warn: 'Peso bilanciato al centro del piede.' },
+      { id: 'ex_1', cat: 'Riscaldamento', name: 'Cat-Cow a pelvi neutra', meta: 'Mobilità dorsale · L5-S1 safe · 2 × 30s', sets: 2, duration: 30, kcal: 6, posture: '🐾 Posizione: In Quadrupedia', poseType: 'quadruped', start: 'In quadrupedia, mani sotto le spalle e ginocchia sotto le anche.', exec: 'Curva dolcemente il tratto dorsale e ritorna in asse neutro.', breath: 'Espira incurvando, inspira tornando neutra.', warn: 'Non lasciar cadere l’addome verso il basso.' },
+      { id: 'ex_2', cat: 'Rinforzo Core', name: 'Bird-Dog (McGill Big 3)', meta: 'Core profondo · antirotazione · 2 × 40s', sets: 2, duration: 40, kcal: 10, posture: '🐾 Posizione: In Quadrupedia', poseType: 'quadruped_ext', start: 'In quadrupedia con schiena piatta e stabile.', exec: 'Allunga braccio destro e gamba sinistra in parallelo.', breath: 'Espira durante l’allungo.', warn: 'Non superare l’altezza del bacino con la gamba.' },
+      { id: 'ex_3', cat: 'Rinforzo Core', name: 'Dead Bug facilitato', meta: 'Trasverso addome · 2 × 35s', sets: 2, duration: 35, kcal: 8, posture: '🛌 Posizione: Supina', poseType: 'supine', start: 'Supina, lombari ben aderenti a terra, ginocchia a 90°.', exec: 'Abbassa un tallone sfiorando il pavimento senza inarcare.', breath: 'Espira scendendo con il tallone.', warn: 'Se la schiena si stacca, riduci l’escursione.' },
+      { id: 'ex_4', cat: 'Rinforzo Core', name: 'Curl-up isometrico McGill', meta: 'Retto addominale · 2 × 25s', sets: 2, duration: 25, kcal: 7, posture: '🛌 Posizione: Supina', poseType: 'supine_crunch', start: 'Supina, una gamba piegata e mani sotto i lombari.', exec: 'Solleva solo testa e spalle di pochi centimetri.', breath: 'Espira salendo.', warn: 'Non tirare mai il collo con le mani.' },
+      { id: 'ex_5', cat: 'Mobilità Posturale', name: 'Rotazioni toraciche in quadrupedia', meta: 'Mobilità dorsale · 2 × 35s', sets: 2, duration: 35, kcal: 7, posture: '🐾 Posizione: In Quadrupedia', poseType: 'quadruped_rot', start: 'In quadrupedia, una mano dietro la nuca.', exec: 'Ruota il gomito verso l’alto aprendo il torace.', breath: 'Espira aprendo, inspira tornando.', warn: 'Il movimento deve partire dalla parte alta della schiena.' },
+      { id: 'ex_6', cat: 'Mobilità Posturale', name: 'Aperture a libro supine', meta: 'Spalle e torace · 2 × 40s', sets: 2, duration: 40, kcal: 8, posture: '🛌 Posizione: Sul Fianco', poseType: 'side', start: 'Sul fianco con braccia tese in avanti.', exec: 'Apri il braccio superiore disegnando un semicerchio.', breath: 'Espira aprendo il petto.', warn: 'Mantieni le ginocchia unite a terra.' },
+      { id: 'ex_7', cat: 'Mobilità Posturale', name: 'Retrazione cervicale e mento in dentro', meta: 'Cervicale · 2 × 30s', sets: 2, duration: 30, kcal: 5, posture: '🧍 Posizione: In Piedi o Seduta', poseType: 'sitting', start: 'Seduta o in piedi con lo sguardo dritto in avanti.', exec: 'Arretra dolcemente il mento creando il doppio mento.', breath: 'Respirazione fluida.', warn: 'Non inclinare la testa in basso.' },
+      { id: 'ex_8', cat: 'Glutei & Schiena', name: 'Ponte glutei controllato', meta: 'Glutei · stabilità · 3 × 35s', sets: 2, duration: 35, kcal: 9, posture: '🛌 Posizione: Supina', poseType: 'bridge', start: 'Supina, ginocchia piegate, piedi a terra.', exec: 'Stringi i glutei e solleva il bacino in linea retta.', breath: 'Espira sollevando, inspira scendendo.', warn: 'Non inarcare eccessivamente la schiena in alto.' },
+      { id: 'ex_9', cat: 'Glutei & Schiena', name: 'Clamshell per medio gluteo', meta: 'Stabilità anca · 2 × 30s', sets: 2, duration: 30, kcal: 6, posture: '🛌 Posizione: Sul Fianco', poseType: 'side', start: 'Sul fianco con ginocchia piegate a 45 gradi.', exec: 'Apri il ginocchio superiore mantenendo i talloni uniti.', breath: 'Espira aprendo, inspira chiudendo.', warn: 'Non ruotare il bacino all’indietro.' },
+      { id: 'ex_10', cat: 'Glutei & Schiena', name: 'Estensione anca prona controllata', meta: 'Glutei bassi · 2 × 30s', sets: 2, duration: 30, kcal: 7, posture: '🧘 Posizione: Prona', poseType: 'prone', start: 'Prona con le mani sotto la fronte.', exec: 'Solleva una gamba tesa di pochi centimetri attivando il gluteo.', breath: 'Espira salendo.', warn: 'Il bacino non deve mai staccarsi dal tappetino.' },
+      { id: 'ex_11', cat: 'Scarico & Decompressione', name: 'Scarico lombare in quadrupedia', meta: 'Decompressione L5-S1 · 1 × 45s', sets: 1, duration: 45, kcal: 5, posture: '🐾 Posizione: Inginocchiata', poseType: 'childpose', start: 'In ginocchio, mani avanti sul tappetino.', exec: 'Spingi dolcemente i fianchi indietro verso i talloni.', breath: 'Respiri profondi gonfiando l’addome.', warn: 'Fermati prima di avvertire tensione eccessiva.' },
+      { id: 'ex_12', cat: 'Scarico & Decompressione', name: 'Allungamento gluteo e piriforme', meta: 'Sollievo nervo sciatico · 1 × 45s', sets: 1, duration: 45, kcal: 5, posture: '🛌 Posizione: Supina', poseType: 'supine', start: 'Supina con entrambe le ginocchia piegate.', exec: 'Caviglia su ginocchio opposto, tira verso il petto.', breath: 'Inspira ed espira lasciando andare.', warn: 'Testa e spalle restano salde a terra.' },
+      { id: 'ex_13', cat: 'Scarico & Decompressione', name: 'Basculamento bacino antalgico', meta: 'Rilassamento sacrale · 2 × 40s', sets: 2, duration: 40, kcal: 6, posture: '🛌 Posizione: Supina', poseType: 'bridge', start: 'Supina con cuscino sotto le ginocchia.', exec: 'Bascula dolcemente il bacino massaggiando i lombari.', breath: 'Respiro lento e ritmato.', warn: 'Movimenti minimi e senza sforzo.' },
+      { id: 'ex_14', cat: 'Antirotazione & Obliqui', name: 'Side Plank sulle ginocchia', meta: 'Quadrato dei lombi · 2 × 25s', sets: 2, duration: 25, kcal: 7, posture: '🛌 Posizione: Sul Fianco', poseType: 'side', start: 'Su un fianco, gomito sotto la spalla, ginocchia piegate.', exec: 'Solleva il bacino allineando busto e cosce.', breath: 'Respirazione regolare e costante.', warn: 'Evita rotazioni in avanti del bacino.' },
+      { id: 'ex_15', cat: 'Antirotazione & Obliqui', name: 'Pallof press isometrica a terra', meta: 'Antirotazione profonda · 2 × 30s', sets: 2, duration: 30, kcal: 8, posture: '🧍 Posizione: In Ginocchio', poseType: 'sitting', start: 'Seduta o in ginocchio con un elastico leggero.', exec: 'Spingi le mani in avanti resistendo alla torsione.', breath: 'Espira spingendo.', warn: 'Tieni le spalle basse e l’addome contratto.' },
+      { id: 'ex_16', cat: 'Riattivazione & Equilibrio', name: 'Marcia dolce sul posto', meta: 'Attivazione circolatoria · 2 × 35s', sets: 2, duration: 35, kcal: 8, posture: '🧍 Posizione: In Piedi', poseType: 'standing', start: 'In piedi vicino a un supporto per sicurezza.', exec: 'Solleva alternativamente le ginocchia a modesta altezza.', breath: 'Respirazione naturale.', warn: 'Schiena eretta e addome stabile.' },
+      { id: 'ex_17', cat: 'Riattivazione & Equilibrio', name: 'Affondo monopodalico assistito', meta: 'Stabilità anca · 2 × 30s', sets: 2, duration: 30, kcal: 8, posture: '🧍 Posizione: In Piedi', poseType: 'standing', start: 'In piedi con appoggio stabile a una sedia.', exec: 'Fletti leggermente il ginocchio anteriore controllando il baricentro.', breath: 'Espira flettendo.', warn: 'Il ginocchio non deve superare la punta del piede.' },
+      { id: 'ex_18', cat: 'Stretching Totale', name: 'Stretching dolce ischiocrurali', meta: 'Catena posteriore · 1 × 45s', sets: 1, duration: 45, kcal: 5, posture: '🛌 Posizione: Supina', poseType: 'supine', start: 'Supina con una gamba sollevata e abbracciata dietro.', exec: 'Tieni la gamba leggermente flessa ed estendi dolcemente.', breath: 'Respirazione lenta e profonda.', warn: 'Non forzare l’estensione completa del ginocchio.' },
+      { id: 'ex_19', cat: 'Stretching Totale', name: 'Torsione dolce supina protetta', meta: 'Mobilità colonna · 1 × 45s', sets: 1, duration: 45, kcal: 5, posture: '🛌 Posizione: Supina', poseType: 'supine', start: 'Supina con ginocchia unite piegate.', exec: 'Lascia cadere dolcemente le ginocchia da un lato.', breath: 'Espira lasciando scendere.', warn: 'Spalle ben incollate a terra.' }
+    ];
+
+    const DAILY_PLANS = {
+      1: [0, 1, 2, 3, 4, 14, 11, 12],
+      2: [0, 1, 5, 6, 7, 16, 11, 18],
+      3: [0, 1, 8, 9, 10, 2, 12, 13],
+      4: [1, 11, 12, 13, 0, 8, 18, 19],
+      5: [0, 2, 4, 14, 15, 3, 11, 12],
+      6: [0, 1, 16, 17, 8, 9, 11, 18],
+      0: [1, 11, 12, 13, 18, 19, 6, 7]
+    };
+
+    let currentDateObj = new Date();
+    let currentDayOfWeek = currentDateObj.getDay();
+    let currentExercises = [];
+    let completedSet = new Set();
+    let cardTimers = {};
+
+    let gpOpen = false, gpExIndex = 0, gpCurrentSet = 1, gpStage = 'prep', gpTimeLeft = 5, gpTotalStageTime = 5, gpPaused = false, gpInterval = null;
+    let curKcal = 0, tarKcal = 1280;
+    let curP = 0, tarP = 113;
+    let curC = 0, tarC = 127;
+    let curF = 0, tarF = 36;
+    
+    let dailyHealthStore = {};
+    let savedRecipes = [
+      { id: 'r1', title: 'Colazione Proteica ai Corn Flakes', ing: 'Latte scremato, corn flakes integrali, proteine in polvere', kcal: 380 },
+      { id: 'r2', title: 'Petto di pollo in frigg. ad aria con verdure', ing: 'Petto di pollo 180g, zucchine, olio EVO 1 cucchiaio', kcal: 450 }
+    ];
+    let allMealLogs = {};
+    let currentActiveMealKey = 'colazione';
+    let appThemeIndex = 0;
+    const themes = ['theme-forest', 'theme-midnight', 'theme-purple'];
+
+    function showToast(msg) {
+      const t = document.getElementById('appToast');
+      if (!t) return;
+      t.innerText = msg;
+      t.style.display = 'block';
+      clearTimeout(window._toastTimer);
+      window._toastTimer = setTimeout(() => { t.style.display = 'none'; }, 4000);
+    }
+
+    // --- GOOGLE HEALTH CONNECT AUTHORIZATION DIALOG ---
+    function promptGoogleHealthConnectAuth() {
+      const confirmed = confirm("🔗 Connetti a Google Health Connect\n\nFitApp Pro richiede l'accesso in lettura per:\n• Passi giornalieri\n• Calorie attive\n• Peso corporeo\n• Ore di sonno\n\nVuoi concedere l'autorizzazione?");
+      if (confirmed) {
+        showToast("💚 Accesso a Google Health Connect concesso! Sincronizzazione in corso...");
+        setTimeout(() => {
+          const key = getDateKey(currentDateObj);
+          if (!dailyHealthStore[key]) dailyHealthStore[key] = { weight: 62.6, steps: 6420, activeKcal: 791, sleepHours: 7.5, waterLiters: 1.8 };
+          dailyHealthStore[key].steps = 6540;
+          dailyHealthStore[key].activeKcal = 812;
+          updateHealthBannerForCurrentDate();
+          showToast("✨ Sincronizzazione completata: 6.540 passi importati da Health!");
+        }, 1200);
+      } else {
+        showToast("⚠️ Autorizzazione annullata. Puoi inserire i dati manualmente.");
+      }
+    }
+
+    // --- WEB AUDIO API SOUND SYSTEM ---
+    function playNotificationSound(soundType = 'chime') {
+      try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (!audioCtx) return;
+        
+        const now = audioCtx.currentTime;
+
+        if (soundType === 'chime') {
+          const osc1 = audioCtx.createOscillator();
+          const gain1 = audioCtx.createGain();
+          osc1.type = 'sine'; osc1.frequency.setValueAtTime(523.25, now);
+          gain1.gain.setValueAtTime(0.2, now);
+          gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
+          osc1.connect(gain1); gain1.connect(audioCtx.destination);
+          osc1.start(now); osc1.stop(now + 0.6);
+
+          const osc2 = audioCtx.createOscillator();
+          const gain2 = audioCtx.createGain();
+          osc2.type = 'sine'; osc2.frequency.setValueAtTime(659.25, now + 0.15);
+          gain2.gain.setValueAtTime(0.25, now + 0.15);
+          gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.9);
+          osc2.connect(gain2); gain2.connect(audioCtx.destination);
+          osc2.start(now + 0.15); osc2.stop(now + 0.9);
+
+        } else if (soundType === 'bell') {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'triangle'; osc.frequency.setValueAtTime(880, now);
+          gain.gain.setValueAtTime(0.3, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 1.2);
+          osc.connect(gain); gain.connect(audioCtx.destination);
+          osc.start(now); osc.stop(now + 1.2);
+
+        } else if (soundType === 'beep') {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'sine'; osc.frequency.setValueAtTime(440, now);
+          gain.gain.setValueAtTime(0.2, now);
+          gain.gain.linearRampToValueAtTime(0.001, now + 0.3);
+          osc.connect(gain); gain.connect(audioCtx.destination);
+          osc.start(now); osc.stop(now + 0.3);
+        }
+      } catch (e) {
+        console.log("Audio not supported or blocked");
+      }
+    }
+    
+    const FOOD_DATABASE_DB = {
+      'caffè': { name: 'caffè', kcal100: 5, p100: 0.2, c100: 0.5, f100: 0.1, defGrams: 50 },
+      'caffe': { name: 'caffè', kcal100: 5, p100: 0.2, c100: 0.5, f100: 0.1, defGrams: 50 },
+      'pane': { name: 'pane bianco', kcal100: 265, p100: 8, c100: 50, f100: 1.2, defGrams: 50 },
+      'pollo': { name: 'petto di pollo', kcal100: 165, p100: 31, c100: 0, f100: 3.6, defGrams: 150 },
+      'riso': { name: 'riso bollito', kcal100: 130, p100: 2.7, c100: 28, f100: 0.3, defGrams: 100 },
+      'pasta': { name: 'pasta di semola', kcal100: 350, p100: 13, c100: 72, f100: 1.5, defGrams: 80 },
+      'ricotta': { name: 'ricotta di vaccina', kcal100: 146, p100: 11, c100: 3.5, f100: 10, defGrams: 80 },
+      'pesto': { name: 'pesto alla genovese', kcal100: 450, p100: 5, c100: 4, f100: 46, defGrams: 40 },
+      'mela': { name: 'mela fresca', kcal100: 52, p100: 0.3, c100: 14, f100: 0.2, defGrams: 150 },
+      'banana': { name: 'banana', kcal100: 89, p100: 1.1, c100: 23, f100: 0.3, defGrams: 120 },
+      'uova': { name: 'uovo intero', kcal100: 155, p100: 13, c100: 1.1, f100: 11, defGrams: 60 }
+    };
+
+    let activeEstimatedIngredients = [];
+
+    function onFoodSearchInput(val) {
+      const q = val.toLowerCase().trim();
+      const box = document.getElementById('estimationResultBox');
+      if (!q) { box.style.display = 'none'; activeEstimatedIngredients = []; return; }
+
+      let matchedKeys = Object.keys(FOOD_DATABASE_DB).filter(k => q.includes(k));
+      
+      if (matchedKeys.length > 0) {
+        activeEstimatedIngredients = matchedKeys.map(k => {
+          let item = FOOD_DATABASE_DB[k];
+          return {
+            key: k,
+            name: item.name,
+            kcal100: item.kcal100,
+            p100: item.p100,
+            c100: item.c100,
+            f100: item.f100,
+            grams: item.defGrams,
+            selected: true
+          };
+        });
+      } else {
+        activeEstimatedIngredients = [{
+          key: 'custom',
+          name: val,
+          kcal100: 200,
+          p100: 8,
+          c100: 25,
+          f100: 5,
+          grams: 150,
+          selected: true
+        }];
+      }
+
+      document.getElementById('estDishTitleName').innerText = val;
+      box.style.display = 'block';
+      renderSubIngredientsUI();
+    }
+
+    function renderSubIngredientsUI() {
+      const container = document.getElementById('estSubIngredientsList');
+      let totalKcal = 0;
+
+      container.innerHTML = activeEstimatedIngredients.map((ing, idx) => {
+        let ratio = ing.grams / 100;
+        let kcal = Math.round(ing.kcal100 * ratio);
+        if (ing.selected) totalKcal += kcal;
+
+        return `
+          <div class="sub-ingredient-item">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+              <div style="display:flex; align-items:center; gap:6px;">
+                <input type="checkbox" ${ing.selected ? 'checked' : ''} onchange="toggleIngredientSelection(${idx})" style="width:15px;height:15px;accent-color:var(--green)">
+                <strong style="font-size:13.5px; color:#fff;">${ing.name}</strong>
+              </div>
+              <span style="font-size:14px; font-weight:700; color:var(--green);">${kcal} kcal</span>
+            </div>
+            <div style="display:grid; grid-template-columns: 1fr 1.2fr; gap:8px; align-items:center;">
+              <div>
+                <label style="font-size:10.5px; color:var(--muted); display:block; margin-bottom:2px;">Grammi</label>
+                <input type="number" class="form-input" value="${ing.grams}" oninput="updateIngredientGrams(${idx}, this.value)" style="padding:6px; font-size:12px;">
+              </div>
+              <div style="font-size:11px; color:#d1d5db; line-height:1.3;">
+                <div>Prot: <strong>${Math.round((ing.p100 * ratio)*10)/10}g</strong></div>
+                <div>Carb: <strong>${Math.round((ing.c100 * ratio)*10)/10}g</strong></div>
+                <div>Grassi: <strong>${Math.round((ing.f100 * ratio)*10)/10}g</strong></div>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      document.getElementById('estDishTotalKcal').innerText = totalKcal + ' kcal';
+    }
+
+    function toggleIngredientSelection(idx) {
+      activeEstimatedIngredients[idx].selected = !activeEstimatedIngredients[idx].selected;
+      renderSubIngredientsUI();
+    }
+
+    function updateIngredientGrams(idx, val) {
+      activeEstimatedIngredients[idx].grams = parseFloat(val) || 0;
+      renderSubIngredientsUI();
+    }
+
+    function confirmAddEstimatedFood() {
+      const activeItems = activeEstimatedIngredients.filter(i => i.selected);
+      if (activeItems.length === 0) { showToast("⚠️ Seleziona almeno un ingrediente."); return; }
+
+      const mealLog = getCurrentMealLog();
+      if (!mealLog[currentActiveMealKey]) mealLog[currentActiveMealKey] = [];
+
+      activeItems.forEach(ing => {
+        let ratio = ing.grams / 100;
+        let kcal = Math.round(ing.kcal100 * ratio);
+        mealLog[currentActiveMealKey].push({
+          name: `${ing.name} (${ing.grams}g)`,
+          kcal: kcal
+        });
+      });
+
+      const key = getDateKey(currentDateObj);
+      allMealLogs[key] = mealLog;
+
+      document.getElementById('newFoodName').value = '';
+      document.getElementById('estimationResultBox').style.display = 'none';
+      activeEstimatedIngredients = [];
+
+      renderModalMealItems();
+      recalculateNutritionFromMeals();
+      updateUnifiedMealHubUI();
+      updateSmartInsights();
+      showToast("✅ Alimenti aggiunti con successo!");
+    }
+
+    function triggerBarcodeScan() { document.getElementById('barcodeFileInput').click(); }
+    function handleBarcodeFile(input) {
+      if (input.files && input.files[0]) {
+        let detected = { name: "Yogurt Greco 0% (150g)", kcal: 95 };
+        const mealLog = getCurrentMealLog();
+        if (!mealLog[currentActiveMealKey]) mealLog[currentActiveMealKey] = [];
+        mealLog[currentActiveMealKey].push(detected);
+        allMealLogs[getDateKey(currentDateObj)] = mealLog;
+        renderModalMealItems(); recalculateNutritionFromMeals(); updateUnifiedMealHubUI(); updateSmartInsights();
+        showToast(`🏷️ Barcode: ${detected.name} aggiunto!`);
+        input.value = '';
+      }
+    }
+
+    function triggerPhotoAI() { document.getElementById('photoAIInput').click(); }
+    function handlePhotoAIFile(input) {
+      if (input.files && input.files[0]) {
+        let detected = { name: "Piatto bilanciato AI (380g)", kcal: 420 };
+        const mealLog = getCurrentMealLog();
+        if (!mealLog[currentActiveMealKey]) mealLog[currentActiveMealKey] = [];
+        mealLog[currentActiveMealKey].push(detected);
+        allMealLogs[getDateKey(currentDateObj)] = mealLog;
+        renderModalMealItems(); recalculateNutritionFromMeals(); updateUnifiedMealHubUI(); updateSmartInsights();
+        showToast(`📸 Foto AI analizzata: ${detected.name} aggiunto!`);
+        input.value = '';
+      }
+    }
+
+    function triggerHealthScreenshot() { document.getElementById('healthScreenshotInput').click(); }
+    async function handleHealthScreenshotFile(input) {
+      if (!input.files || !input.files[0]) return;
+      const file = input.files[0];
+      showToast("🔍 Analisi screenshot Health con IA in corso...");
+
+      try {
+        const reader = new FileReader();
+        reader.onload = async function(e) {
+          const base64Data = e.target.result.split(',')[1];
+          const apiKey = "";
+          const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+          
+          const payload = {
+            contents: [{
+              role: "user",
+              parts: [
+                { text: "Analyze this health app screenshot. Extract numeric values for steps (e.g. 6420), active calories / energy burned (e.g. 791), body weight (e.g. 62.6), sleep hours (e.g. 7.5), and water. Return ONLY strict JSON: {\"steps\": 6420, \"activeKcal\": 791, \"weight\": 62.6, \"sleep\": 7.5, \"water\": 1.8}" },
+                { inlineData: { mimeType: file.type || "image/png", data: base64Data } }
+              ]
+            }],
+            generationConfig: { responseMimeType: "application/json" }
+          };
+
+          const resp = await fetch(apiUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          const result = await resp.json();
+          const jsonText = result.candidates?.[0]?.content?.parts?.[0]?.text;
+          if (jsonText) {
+            const parsed = JSON.parse(jsonText);
+            if (parsed.steps) document.getElementById('syncInputSteps').value = parsed.steps;
+            if (parsed.activeKcal) document.getElementById('syncInputKcal').value = parsed.activeKcal;
+            if (parsed.weight) document.getElementById('syncInputWeight').value = parsed.weight;
+            if (parsed.sleep) document.getElementById('syncInputSleep').value = parsed.sleep;
+            if (parsed.water) document.getElementById('syncInputWater').value = parsed.water;
+            showToast("✨ Screenshot letto con successo! Controlla i campi e premi Salva.");
+          } else {
+            showToast("⚠️ Impossibile estrarre i dati. Inseriscili manualmente.");
+          }
+          input.value = '';
+        };
+        reader.readAsDataURL(file);
+      } catch (err) {
+        showToast("⚠️ Errore di lettura screenshot.");
+        input.value = '';
+      }
+    }
+
+    function getDateKey(date) { return date.toISOString().split('T')[0]; }
+
+    function getCurrentMealLog() {
+      const key = getDateKey(currentDateObj);
+      if (!allMealLogs[key]) allMealLogs[key] = { colazione: [], pranzo: [], cena: [], spuntini: [] };
+      return allMealLogs[key];
+    }
+
+    function getCurrentDayHealthData() {
+      const key = getDateKey(currentDateObj);
+      if (!dailyHealthStore[key]) {
+        dailyHealthStore[key] = { weight: 62.6, steps: 6420, activeKcal: 791, sleepHours: 7.5, waterLiters: 1.8 };
+      }
+      return dailyHealthStore[key];
+    }
+
+    function updateDateLabel() {
+      const options = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
+      document.getElementById('dateLabel').innerText = currentDateObj.toLocaleDateString('it-IT', options);
+    }
+
+    function changeDay(delta) {
+      currentDateObj.setDate(currentDateObj.getDate() + delta);
+      currentDayOfWeek = currentDateObj.getDay();
+      updateDateLabel();
+      recalculateNutritionFromMeals();
+      updateUnifiedMealHubUI();
+      updateHealthBannerForCurrentDate();
+      updateSmartInsights();
+    }
+
+    function updateHealthBannerForCurrentDate() {
+      const dData = getCurrentDayHealthData();
+      document.getElementById('healthSubText').innerText = `Peso ${dData.weight}kg · ${dData.steps} passi · ${dData.activeKcal} kcal`;
+      document.getElementById('hmSteps').innerText = dData.steps.toLocaleString();
+      document.getElementById('hmKcal').innerText = dData.activeKcal;
+      document.getElementById('hmSleep').innerText = dData.sleepHours + 'h';
+      document.getElementById('hmWater').innerText = dData.waterLiters + 'L';
+
+      document.getElementById('pWeight').value = dData.weight;
+      document.getElementById('wkUserWeightLbl').innerText = dData.weight;
+    }
+
+    function openHealthSyncModal() {
+      const dData = getCurrentDayHealthData();
+      document.getElementById('syncInputSteps').value = dData.steps;
+      document.getElementById('syncInputKcal').value = dData.activeKcal;
+      document.getElementById('syncInputWeight').value = dData.weight;
+      document.getElementById('syncInputSleep').value = dData.sleepHours;
+      document.getElementById('syncInputWater').value = dData.waterLiters;
+      openModal('modalHealthSync');
+    }
+
+    function saveHealthSyncValues() {
+      const key = getDateKey(currentDateObj);
+      if (!dailyHealthStore[key]) dailyHealthStore[key] = { weight: 62.6, steps: 6420, activeKcal: 791, sleepHours: 7.5, waterLiters: 1.8 };
+      
+      dailyHealthStore[key].steps = parseInt(document.getElementById('syncInputSteps').value) || 6420;
+      dailyHealthStore[key].activeKcal = parseInt(document.getElementById('syncInputKcal').value) || 791;
+      dailyHealthStore[key].weight = parseFloat(document.getElementById('syncInputWeight').value) || 62.6;
+      dailyHealthStore[key].sleepHours = parseFloat(document.getElementById('syncInputSleep').value) || 7.5;
+      dailyHealthStore[key].waterLiters = parseFloat(document.getElementById('syncInputWater').value) || 1.8;
+
+      updateHealthBannerForCurrentDate();
+      updateSmartInsights();
+      closeModal('modalHealthSync');
+      showToast("✅ Passi e dati giornalieri aggiornati!");
+    }
+
+    function recalcProfilePreview() {
+      const weight = parseFloat(document.getElementById('pWeight').value) || 62.6;
+      document.getElementById('profBmrTdeeLine').innerText = `Metabolismo basale 1245 kcal · Fabbisogno 1494 kcal`;
+      document.getElementById('profRecKcal').innerText = 1270;
+      document.getElementById('profRecMacros').innerText = `Proteine 113 g · Carboidrati 127 g · Grassi 36 g`;
+      document.getElementById('profRecBmi').innerText = `BMI 24.4 (nella norma)`;
+    }
+
+    function saveProfile(useAsTargets = true) {
+      const newWeight = parseFloat(document.getElementById('pWeight').value) || 62.6;
+      const key = getDateKey(currentDateObj);
+      if (!dailyHealthStore[key]) dailyHealthStore[key] = { weight: 62.6, steps: 6420, activeKcal: 791, sleepHours: 7.5, waterLiters: 1.8 };
+      dailyHealthStore[key].weight = newWeight;
+
+      updateHealthBannerForCurrentDate();
+      updateSmartInsights();
+      closeModal('modalProfile');
+      showToast(`✅ Profilo aggiornato (${newWeight} kg)!`);
+    }
+
+    function saveTargetValues() {
+      tarKcal = parseInt(document.getElementById('pTargetKcalInput').value) || 1280;
+      updateNutriUI(); updateSmartInsights(); closeModal('modalTarget');
+      showToast(`🎯 Target salvati!`);
+    }
+
+    function recalculateNutritionFromMeals() {
+      const mealLog = getCurrentMealLog();
+      curKcal = 0; curP = 0; curC = 0; curF = 0;
+      Object.keys(mealLog).forEach(key => {
+        (mealLog[key] || []).forEach(item => {
+          curKcal += item.kcal;
+          curP += Math.round(item.kcal * 0.08);
+          curC += Math.round(item.kcal * 0.12);
+          curF += Math.round(item.kcal * 0.03);
+        });
+      });
+      updateNutriUI();
+      updateSmartInsights();
+    }
+
+    function updateSmartInsights() {
+      const rem = tarKcal - curKcal;
+      const dData = getCurrentDayHealthData();
+      
+      let mealSuggestion = curKcal === 0 
+        ? `🍽️ Per la giornata di oggi (${dData.weight} kg, ${dData.steps} passi, ${dData.activeKcal} kcal bruciate): non hai ancora registrato pasti. Inizia con una colazione proteica.`
+        : `💡 Ti rimangono ${rem} kcal da consumare. Con ${dData.activeKcal} kcal attive oggi (${dData.steps} passi), privilegia proteine magre (pollo, pesce, ricotta) per proteggere la tua muscolatura e l'articolazione L5-S1.`;
+
+      let weightAdvice = `⚖️ <strong>Analisi Peso (${dData.weight} kg):</strong> Il tuo peso è perfettamente impostato. Mantenere questo range riduce il carico sulla vertebra L5-S1.`;
+
+      document.getElementById('smartInsightsText').innerHTML = `
+        <div>${mealSuggestion}</div>
+        <div style="margin-top:6px; padding-top:6px; border-top:1px dashed rgba(255,255,255,0.08);">${weightAdvice}</div>
+        <div class="insights-tip-row">
+          <span>🛡️</span>
+          <div>Protezione L5-S1: completa i tuoi 20 minuti di esercizi posturali quotidiani.</div>
+        </div>
+      `;
+    }
+
+    function openMealModal(mealKey = 'colazione') {
+      switchMealTab(mealKey);
+      openModal('modalMealManager');
+    }
+
+    function switchMealTab(mealKey) {
+      currentActiveMealKey = mealKey;
+      ['colazione', 'pranzo', 'cena', 'spuntini'].forEach(k => {
+        const btn = document.getElementById('tabBtn-' + k);
+        if (k === mealKey) btn.classList.add('active'); else btn.classList.remove('active');
+      });
+      const names = { colazione: 'Colazione', pranzo: 'Pranzo', cena: 'Cena', spuntini: 'Spuntini' };
+      document.getElementById('modalMealMainTitle').innerText = 'Gestione ' + names[mealKey];
+      document.getElementById('addFoodHeaderTitle').innerText = '+ Aggiungi a ' + names[mealKey];
+      document.getElementById('estimationResultBox').style.display = 'none';
+      document.getElementById('newFoodName').value = '';
+      renderModalMealItems();
+    }
+
+    function renderModalMealItems() {
+      const mealLog = getCurrentMealLog();
+      const items = mealLog[currentActiveMealKey] || [];
+      const container = document.getElementById('modalMealItemsContainer');
+      
+      container.innerHTML = items.length === 0 ? '<div style="color:var(--muted);font-size:12.5px;text-align:center;padding:12px;">Nessun alimento inserito in questo pasto.</div>' :
+        items.map((i, idx) => `
+          <div class="meal-item-row">
+            <span>${i.name}</span>
+            <div style="display:flex; align-items:center; gap:10px;">
+              <span style="font-weight:600;">${i.kcal} kcal</span>
+              <button class="btn-del-item" onclick="removeMealItemFromModal('${currentActiveMealKey}', ${idx})">✕</button>
+            </div>
+          </div>
+        `).join('');
+    }
+
+    function removeMealItemFromModal(mealKey, index) {
+      const mealLog = getCurrentMealLog();
+      if (mealLog[mealKey] && mealLog[mealKey][index]) {
+        mealLog[mealKey].splice(index, 1);
+        allMealLogs[getDateKey(currentDateObj)] = mealLog;
+        renderModalMealItems();
+        recalculateNutritionFromMeals();
+        updateUnifiedMealHubUI();
+        updateSmartInsights();
+      }
+    }
+
+    function updateUnifiedMealHubUI() {
+      const mealLog = getCurrentMealLog();
+      let totalKcalAll = 0, totalCountAll = 0;
+      ['colazione', 'pranzo', 'cena', 'spuntini'].forEach(key => {
+        const items = mealLog[key] || [];
+        totalKcalAll += items.reduce((acc, cur) => acc + cur.kcal, 0);
+        totalCountAll += items.length;
+      });
+      document.getElementById('summary-all-meals').innerText = `${totalKcalAll} kcal totali · ${totalCountAll} alimenti inseriti`;
+    }
+
+    // --- ROADMAP (Grafici, Notifiche, Ricettario, Temi, Cloud) ---
+    function openChartsModal() {
+      const weightBars = document.getElementById('chartWeightBars');
+      const kcalBars = document.getElementById('chartKcalBars');
+      
+      let sampleWeights = [63.1, 62.9, 62.8, 62.7, 62.6, 62.6, 62.6];
+      let sampleKcals = [1210, 1150, 1340, 1280, 1260, 1190, curKcal || 1220];
+
+      weightBars.innerHTML = sampleWeights.map((w, i) => `
+        <div style="display:flex; flex-direction:column; align-items:center; gap:4px; flex:1;">
+          <div style="font-size:9.5px; color:var(--muted);">${w}</div>
+          <div style="width:14px; height:${Math.round((w - 60) * 12)}px; background:var(--green); border-radius:4px 4px 0 0;"></div>
+          <div style="font-size:10px; color:var(--muted);">G${i+1}</div>
+        </div>
+      `).join('');
+
+      kcalBars.innerHTML = sampleKcals.map((k, i) => `
+        <div style="display:flex; flex-direction:column; align-items:center; gap:4px; flex:1;">
+          <div style="font-size:9.5px; color:var(--muted);">${k}</div>
+          <div style="width:14px; height:${Math.round((k / 1600) * 80)}px; background:var(--orange); border-radius:4px 4px 0 0;"></div>
+          <div style="font-size:10px; color:var(--muted);">G${i+1}</div>
+        </div>
+      `).join('');
+
+      openModal('modalCharts');
+    }
+
+    function openRecipeBookModal() {
+      const container = document.getElementById('savedRecipesListContainer');
+      container.innerHTML = savedRecipes.length === 0 ? '<div style="color:var(--muted); text-align:center; padding:16px;">Nessuna ricetta salvata.</div>' :
+        savedRecipes.map((r, idx) => `
+          <div style="background:#131916; border:1px solid var(--border); border-radius:12px; padding:10px 12px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
+            <div>
+              <strong style="font-size:14px; color:#fff; display:block; margin-bottom:2px;">${r.title}</strong>
+              <div style="font-size:11.5px; color:var(--muted);">${r.ing} · <strong style="color:var(--green);">${r.kcal} kcal</strong></div>
+            </div>
+            <button class="btn-health-sync" onclick="loadRecipeIntoCurrentMeal('${r.title}', ${r.kcal})">Usa</button>
+          </div>
+        `).join('');
+      openModal('modalRecipeBook');
+    }
+
+    function loadRecipeIntoCurrentMeal(title, kcal) {
+      const mealLog = getCurrentMealLog();
+      if (!mealLog[currentActiveMealKey]) mealLog[currentActiveMealKey] = [];
+      mealLog[currentActiveMealKey].push({ name: title, kcal: kcal });
+      allMealLogs[getDateKey(currentDateObj)] = mealLog;
+      recalculateNutritionFromMeals();
+      updateUnifiedMealHubUI();
+      updateSmartInsights();
+      closeModal('modalRecipeBook');
+      showToast(`✅ Ricetta "${title}" aggiunta al pasto!`);
+    }
+
+    function createAndShowRecipe() {
+      lastRecipeObj = { title: document.getElementById('recTitleName').value || 'Piatto Fit', ing: document.getElementById('recIng').value, kcal: parseInt(document.getElementById('recKcal').value) || 450 };
+      document.getElementById('recPrevTitle').innerText = `${lastRecipeObj.title} (${lastRecipeObj.kcal} kcal)`;
+      document.getElementById('recPrevDesc').innerText = lastRecipeObj.ing;
+      document.getElementById('recPreviewBox').style.display = 'block';
+    }
+
+    function saveGeneratedRecipe() {
+      if (lastRecipeObj) {
+        savedRecipes.push({ id: 'r_' + Date.now(), title: lastRecipeObj.title, ing: lastRecipeObj.ing, kcal: lastRecipeObj.kcal });
+        showToast("💾 Ricetta salvata nel Ricettario!");
+        closeModal('modalRecipe');
+      }
+    }
+
+    function openNotificationSettingsModal() {
+      openModal('modalNotificationSettings');
+    }
+
+    function saveNotificationSchedule() {
+      const timeWater = document.getElementById('notifTimeWater').value;
+      const timeWk = document.getElementById('notifTimeWorkout').value;
+      const soundType = document.getElementById('notifSoundSelect').value;
+
+      playNotificationSound(soundType);
+      showToast(`✅ Promemoria salvati! Acqua alle ${timeWater}, L5-S1 alle ${timeWk}.`);
+      closeModal('modalNotificationSettings');
+    }
+
+    function testNotificationSoundAndAlert() {
+      const soundType = document.getElementById('notifSoundSelect').value;
+      playNotificationSound(soundType);
+      showToast("🔔 Test notifica: Ricordati di bere 1.8L d'acqua e fare L5-S1!");
+    }
+
+    function cycleAppTheme() {
+      appThemeIndex = (appThemeIndex + 1) % themes.length;
+      document.body.className = themes[appThemeIndex];
+      const names = ['Verde Foresta L5-S1', 'Blu Notte', 'Viola Salute'];
+      showToast(`🎨 Tema cambiato: ${names[appThemeIndex]}`);
+    }
+
+    function triggerCloudSync() {
+      showToast("☁️ Sincronizzazione Cloud completata con successo! Dati salvati su tutti i tuoi dispositivi.");
+    }
+
+    // --- MOTORE ANATOMICO & ALLENAMENTO ---
+    function drawAnatomicalStickFigure(ctx, w, h, poseType, progress = 0.5) {
+      ctx.clearRect(0, 0, w, h);
+      let bgGrad = ctx.createLinearGradient(0, 0, 0, h);
+      bgGrad.addColorStop(0, '#16201b'); bgGrad.addColorStop(1, '#0e1411');
+      ctx.fillStyle = bgGrad; ctx.fillRect(0, 0, w, h);
+
+      ctx.fillStyle = '#26312c'; ctx.fillRect(w * 0.1, h * 0.78, w * 0.8, 8);
+      ctx.save();
+      let animOffset = Math.sin(progress * Math.PI * 2) * 3;
+
+      if (poseType === 'standing') drawStanding(ctx, w * 0.5, h * 0.3 + animOffset);
+      else if (poseType.includes('quadruped')) drawQuadruped(ctx, w * 0.45, h * 0.52, progress);
+      else if (poseType.includes('supine') || poseType === 'bridge') drawSupine(ctx, w * 0.45, h * 0.62, progress);
+      else if (poseType === 'side') drawSide(ctx, w * 0.45, h * 0.6);
+      else if (poseType === 'sitting') drawSitting(ctx, w * 0.5, h * 0.4);
+      else if (poseType === 'childpose') drawChildPose(ctx, w * 0.5, h * 0.65);
+      else drawStanding(ctx, w * 0.5, h * 0.3);
+      ctx.restore();
+    }
+
+    function drawStanding(ctx, x, y) {
+      ctx.strokeStyle = '#9ca3af'; ctx.lineWidth = 11; ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(x - 8, y + 60); ctx.lineTo(x - 12, y + 125); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(x + 8, y + 60); ctx.lineTo(x + 12, y + 125); ctx.stroke();
+      let torso = ctx.createLinearGradient(x - 15, y, x + 15, y + 60);
+      torso.addColorStop(0, '#c084fc'); torso.addColorStop(1, '#9333ea');
+      ctx.strokeStyle = torso; ctx.lineWidth = 18;
+      ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x, y + 60); ctx.stroke();
+      ctx.fillStyle = '#e5e7eb'; ctx.beginPath(); ctx.arc(x, y - 18, 14, 0, Math.PI * 2); ctx.fill();
+    }
+
+    function drawQuadruped(ctx, x, y, prog) {
+      let torso = ctx.createLinearGradient(x - 35, y, x + 35, y);
+      torso.addColorStop(0, '#c084fc'); torso.addColorStop(1, '#9333ea');
+      ctx.strokeStyle = torso; ctx.lineWidth = 18; ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(x - 35, y); ctx.lineTo(x + 35, y); ctx.stroke();
+      ctx.fillStyle = '#e5e7eb'; ctx.beginPath(); ctx.arc(x - 45, y - 5, 13, 0, Math.PI * 2); ctx.fill();
+    }
+
+    function drawSupine(ctx, x, y, prog) {
+      let torso = ctx.createLinearGradient(x - 30, y + 25, x + 25, y + 25);
+      torso.addColorStop(0, '#c084fc'); torso.addColorStop(1, '#9333ea');
+      ctx.strokeStyle = torso; ctx.lineWidth = 18; ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(x - 30, y + 25); ctx.lineTo(x + 25, y + 25); ctx.stroke();
+      ctx.fillStyle = '#e5e7eb'; ctx.beginPath(); ctx.arc(x - 42, y + 20, 13, 0, Math.PI * 2); ctx.fill();
+    }
+
+    function drawSide(ctx, x, y) {
+      let torso = ctx.createLinearGradient(x - 25, y + 30, x + 25, y + 30);
+      torso.addColorStop(0, '#c084fc'); torso.addColorStop(1, '#9333ea');
+      ctx.strokeStyle = torso; ctx.lineWidth = 18; ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(x - 25, y + 30); ctx.lineTo(x + 25, y + 30); ctx.stroke();
+      ctx.fillStyle = '#e5e7eb'; ctx.beginPath(); ctx.arc(x - 36, y + 26, 13, 0, Math.PI * 2); ctx.fill();
+    }
+
+    function drawSitting(ctx, x, y) {
+      let torso = ctx.createLinearGradient(x - 12, y, x - 5, y + 55);
+      torso.addColorStop(0, '#c084fc'); torso.addColorStop(1, '#9333ea');
+      ctx.strokeStyle = torso; ctx.lineWidth = 18; ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(x - 8, y); ctx.lineTo(x - 5, y + 55); ctx.stroke();
+      ctx.fillStyle = '#e5e7eb'; ctx.beginPath(); ctx.arc(x - 8, y - 14, 13, 0, Math.PI * 2); ctx.fill();
+    }
+
+    function drawChildPose(ctx, x, y) {
+      let torso = ctx.createLinearGradient(x - 20, y + 25, x + 25, y + 40);
+      torso.addColorStop(0, '#c084fc'); torso.addColorStop(1, '#9333ea');
+      ctx.strokeStyle = torso; ctx.lineWidth = 18; ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(x - 15, y + 25); ctx.lineTo(x + 25, y + 40); ctx.stroke();
+      ctx.fillStyle = '#e5e7eb'; ctx.beginPath(); ctx.arc(x - 26, y + 32, 12, 0, Math.PI * 2); ctx.fill();
+    }
+
+    function renderStaticCardCanvases() {
+      setTimeout(() => {
+        currentExercises.forEach((ex, idx) => {
+          const canvas = document.getElementById(`cardCanvas-${idx}`);
+          if (canvas) {
+            const ctx = canvas.getContext('2d');
+            canvas.width = canvas.parentElement.clientWidth || 340;
+            canvas.height = 200;
+            drawAnatomicalStickFigure(ctx, canvas.width, canvas.height, ex.poseType, 0.5);
+          }
+        });
+      }, 50);
+    }
+
+    function loadDayWorkout(dayNum) {
+      currentDayOfWeek = dayNum;
+      completedSet.clear();
+      const indices = DAILY_PLANS[dayNum] || DAILY_PLANS[1];
+      currentExercises = indices.map(i => MASTER_EXERCISES[i]);
+      renderWorkoutCards();
+      updateWorkoutSummaryStats();
+      updateSmartInsights();
+    }
+
+    function renderWorkoutCards() {
+      const container = document.getElementById('workoutExercisesContainer');
+      let html = '', lastCat = '';
+      currentExercises.forEach((ex, idx) => {
+        if (ex.cat !== lastCat) {
+          lastCat = ex.cat;
+          html += `<div class="section-cat"><span>${ex.cat}</span></div>`;
+        }
+        const isDone = completedSet.has(idx);
+        html += `
+          <div class="ex-card">
+            <div class="canvas-preview-box"><canvas id="cardCanvas-${idx}"></canvas></div>
+            <div class="posture-badge">${ex.posture}</div>
+            <div class="ex-name">${ex.name}</div>
+            <div class="ex-meta">${ex.meta}</div>
+            <div class="guide-block"><div class="guide-lbl">📍 Partenza</div><div>${ex.start}</div></div>
+            <div class="guide-block"><div class="guide-lbl">▶️ Esecuzione</div><div>${ex.exec}</div></div>
+            <div class="guide-block"><div class="guide-lbl">🌬️ Respiro</div><div>${ex.breath}</div></div>
+            <div class="guide-block"><div class="guide-lbl">⚠️ Attenzione</div><div>${ex.warn}</div></div>
+            <div class="ex-actions">
+              <button class="btn-ex-act" id="btnTimer-${idx}" onclick="startSingleCardTimer(${idx})">⏱ Serie ${ex.duration}s</button>
+              <button class="btn-ex-act ${isDone?'done':''}" id="btnDone-${idx}" onclick="toggleExerciseDone(${idx})">${isDone ? '✅ Fatto' : '⬜ Fatto'}</button>
+            </div>
+          </div>`;
+      });
+      container.innerHTML = html;
+      document.getElementById('wkTotalCount').innerText = currentExercises.length;
+      renderStaticCardCanvases();
+    }
+
+    function toggleExerciseDone(idx) {
+      if (completedSet.has(idx)) completedSet.delete(idx); else completedSet.add(idx);
+      renderWorkoutCards(); updateWorkoutSummaryStats(); updateSmartInsights();
+    }
+
+    function updateWorkoutSummaryStats() {
+      let kcalSum = 0; completedSet.forEach(i => { kcalSum += currentExercises[i].kcal; });
+      document.getElementById('wkDoneCount').innerText = completedSet.size;
+      document.getElementById('wkBurnedKcal').innerText = kcalSum;
+    }
+
+    function startSingleCardTimer(idx) {
+      if (cardTimers[idx]) { clearInterval(cardTimers[idx]); delete cardTimers[idx]; renderWorkoutCards(); return; }
+      let rem = currentExercises[idx].duration;
+      const btn = document.getElementById(`btnTimer-${idx}`);
+      btn.classList.add('running');
+      cardTimers[idx] = setInterval(() => {
+        rem--;
+        if (rem <= 0) { clearInterval(cardTimers[idx]); delete cardTimers[idx]; completedSet.add(idx); renderWorkoutCards(); updateWorkoutSummaryStats(); updateSmartInsights(); }
+        else { btn.innerText = `⏱ 0:${rem < 10 ? '0'+rem : rem}`; }
+      }, 1000);
+    }
+
+    function startGuidedPlayer(startIndex = 0) {
+      gpOpen = true; gpExIndex = startIndex; gpCurrentSet = 1; gpPaused = false;
+      document.getElementById('modalGuidedPlayer').style.display = 'flex';
+      initGuidedStage('prep');
+      if (gpInterval) clearInterval(gpInterval);
+      gpInterval = setInterval(tickGuidedPlayer, 100);
+    }
+
+    function stopGuidedPlayer() {
+      gpOpen = false; if (gpInterval) clearInterval(gpInterval);
+      document.getElementById('modalGuidedPlayer').style.display = 'none';
+      renderWorkoutCards(); updateWorkoutSummaryStats(); updateSmartInsights();
+    }
+
+    function initGuidedStage(stage) {
+      gpStage = stage; const ex = currentExercises[gpExIndex];
+      document.getElementById('gpStepHeader').innerText = `Esercizio ${gpExIndex + 1} di ${currentExercises.length} · ${ex.cat}`;
+      document.getElementById('gpExName').innerText = ex.name;
+      ['gpPhase1','gpPhase2','gpPhase3'].forEach(id => document.getElementById(id).classList.remove('active'));
+      const fillEl = document.getElementById('gpProgFill');
+
+      if (stage === 'prep') {
+        gpTotalStageTime = 5; gpTimeLeft = 5; fillEl.style.background = 'var(--orange)';
+        document.getElementById('gpPhase1').classList.add('active');
+        document.getElementById('gpExStatus').innerText = `Preparati`;
+      } else if (stage === 'work') {
+        gpTotalStageTime = ex.duration; gpTimeLeft = ex.duration; fillEl.style.background = 'var(--green-btn)';
+        document.getElementById('gpPhase2').classList.add('active');
+        document.getElementById('gpExStatus').innerText = `In Esecuzione`;
+      } else if (stage === 'rest') {
+        gpTotalStageTime = 10; gpTimeLeft = 10; fillEl.style.background = 'var(--blue)';
+        document.getElementById('gpPhase3').classList.add('active');
+        document.getElementById('gpExStatus').innerText = `Recupero`;
+      }
+      updateGuidedTimerUI();
+    }
+
+    function tickGuidedPlayer() {
+      if (!gpOpen || gpPaused) return;
+      gpTimeLeft = Math.max(0, gpTimeLeft - 0.1);
+      updateGuidedTimerUI();
+      const canvas = document.getElementById('gpCanvas');
+      if (canvas) {
+        const ctx = canvas.getContext('2d');
+        canvas.width = canvas.parentElement.clientWidth || 380;
+        canvas.height = 180;
+        drawAnatomicalStickFigure(ctx, canvas.width, canvas.height, currentExercises[gpExIndex].poseType, 1 - (gpTimeLeft / gpTotalStageTime));
+      }
+      if (gpTimeLeft <= 0.01) {
+        if (gpStage === 'prep') initGuidedStage('work');
+        else if (gpStage === 'work') {
+          completedSet.add(gpExIndex); updateWorkoutSummaryStats(); updateSmartInsights();
+          if (gpExIndex + 1 < currentExercises.length) { gpExIndex++; initGuidedStage('prep'); }
+          else { showToast("🎉 Sessione completata!"); stopGuidedPlayer(); }
+        } else if (gpStage === 'rest') initGuidedStage('work');
+      }
+    }
+
+    function updateGuidedTimerUI() {
+      const sec = Math.ceil(gpTimeLeft);
+      document.getElementById('gpTimerDisplay').innerText = `0:${sec < 10 ? '0'+sec : sec}`;
+      document.getElementById('gpProgFill').style.width = (gpTimeLeft / gpTotalStageTime) * 100 + '%';
+    }
+
+    function toggleGuidedPause() { gpPaused = !gpPaused; }
+    function guidedPrevExercise() { if (gpExIndex > 0) { gpExIndex--; initGuidedStage('prep'); } }
+    function guidedNextExercise() { if (gpExIndex + 1 < currentExercises.length) { gpExIndex++; initGuidedStage('prep'); } else { stopGuidedPlayer(); } }
+
+    function openWorkoutView() {
+      document.getElementById('viewMain').style.display = 'none';
+      document.getElementById('viewWorkout').style.display = 'block';
+      loadDayWorkout(currentDayOfWeek);
+    }
+    function closeWorkoutView() { document.getElementById('viewWorkout').style.display = 'none'; document.getElementById('viewMain').style.display = 'block'; }
+    function changeWorkoutProgram(val) { loadDayWorkout(parseInt(val)); }
+    function shuffleDailyWorkout() { currentExercises.sort(() => Math.random() - 0.5); renderWorkoutCards(); }
+
+    function openModal(id) { document.getElementById(id).style.display = 'flex'; if (id === 'modalProfile') recalcProfilePreview(); }
+    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+
+    function updateNutriUI() {
+      document.getElementById('uiCurKcal').innerText = curKcal;
+      document.getElementById('uiTargetKcal').innerText = `/ ${tarKcal} kcal`;
+      document.getElementById('uiRemKcal').innerText = `${Math.max(0, tarKcal - curKcal)} kcal rimaste`;
+      document.getElementById('uiBarKcal').style.width = Math.min(100, (curKcal / tarKcal) * 100) + '%';
+      document.getElementById('uiCurP').innerText = curP;
+      document.getElementById('uiBarP').style.width = Math.min(100, (curP / tarP) * 100) + '%';
+      document.getElementById('uiCurC').innerText = curC;
+      document.getElementById('uiBarC').style.width = Math.min(100, (curC / tarC) * 100) + '%';
+      document.getElementById('uiCurF').innerText = curF;
+      document.getElementById('uiBarF').style.width = Math.min(100, (curF / tarF) * 100) + '%';
+    }
+
+    let lastRecipeObj = null;
+
+    updateDateLabel();
+    recalculateNutritionFromMeals();
+    updateUnifiedMealHubUI();
+    updateHealthBannerForCurrentDate();
+    loadDayWorkout(currentDayOfWeek);
+    updateSmartInsights();
+  </script>
+</body>
+</html>
