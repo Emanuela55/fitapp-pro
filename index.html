@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>FitApp Pro - Ultimate & Fully Connected</title>
     
-    <!-- Meta tag fondamentali per trasformare la pagina in una PWA a schermo intero -->
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -28,31 +27,30 @@
         .top-icons { display: flex; gap: 10px; align-items: center; }
         .icon-btn { background: #2d2d2d; border: none; color: white; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; }
         
-        /* Health Connect Banner */
         .health-banner { background: linear-gradient(135deg, #2a1b3d, #1a1a2e); border: 1px solid var(--accent-purple); border-radius: 14px; padding: 14px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; }
         .health-info h4 { font-size: 14px; color: #d8b4fe; margin-bottom: 2px; }
         .health-info p { font-size: 12px; color: var(--text-muted); }
         .connect-btn { background: var(--accent-purple); color: white; border: none; padding: 8px 14px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 13px; }
 
-        /* Metriche in evidenza */
         .metrics-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 16px; }
         .metric-card { background: var(--card-bg); padding: 10px 6px; border-radius: 12px; text-align: center; }
         .metric-card span { font-size: 11px; color: var(--text-muted); display: block; margin-bottom: 4px; }
         .metric-card strong { font-size: 14px; color: white; }
 
-        /* Calorie Card */
         .calorie-card { background: var(--card-bg); border-radius: 16px; padding: 16px; margin-bottom: 16px; }
         .calorie-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px; }
         .calorie-main { font-size: 28px; font-weight: 700; }
         .calorie-sub { font-size: 13px; color: var(--text-muted); }
 
-        /* Macro progress */
         .macros-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px; }
         .macro-card { background: var(--card-bg); padding: 12px; border-radius: 12px; text-align: center; }
         .macro-card span { font-size: 12px; color: var(--text-muted); }
         .macro-card p { font-size: 13px; font-weight: 600; margin-top: 4px; }
 
-        /* Bottom Nav */
+        .section-card { background: var(--card-bg); border-radius: 16px; padding: 16px; margin-bottom: 16px; }
+        .section-card h3 { font-size: 15px; margin-bottom: 10px; color: var(--text-main); display: flex; align-items: center; gap: 8px; }
+        .action-btn { background: var(--accent-green); color: white; border: none; padding: 10px 16px; border-radius: 10px; font-weight: 600; cursor: pointer; width: 100%; font-size: 14px; margin-top: 8px; }
+
         nav { position: fixed; bottom: 0; left: 0; right: 0; background: #18181b; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #27272a; max-width: 600px; margin: 0 auto; z-index: 1000; }
         .nav-item { background: none; border: none; color: var(--text-muted); font-size: 11px; display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; }
         .nav-item span:first-child { font-size: 18px; }
@@ -68,8 +66,8 @@
         <div class="top-icons">
             <button class="icon-btn" onclick="toggleAppMode()" title="Schermo Intero">📱</button>
             <button class="icon-btn" onclick="triggerHeartSync()" title="Google Health">💚</button>
-            <button class="icon-btn" onclick="openProfile()">👤</button>
-            <button class="icon-btn" onclick="openL5S1()">🎯</button>
+            <button class="icon-btn" onclick="openProfile()" title="Profilo">👤</button>
+            <button class="icon-btn" onclick="openL5S1()" title="Esercizi L5-S1">🎯</button>
         </div>
     </header>
 
@@ -107,7 +105,7 @@
                 <div class="calorie-main"><span id="eaten-kcal">0</span> / <span id="target-kcal">1280</span> kcal</div>
             </div>
         </div>
-        <div style="font-size: 12px; color: var(--text-muted);">1280 kcal rimaste</div>
+        <div style="font-size: 12px; color: var(--text-muted);">1280 kcal rimaste per oggi</div>
     </div>
 
     <div class="macros-grid">
@@ -125,12 +123,18 @@
         </div>
     </div>
 
+    <div class="section-card">
+        <h3><span>🥗</span> Gestione Pasti (Colazione, Pranzo, Cena, Spuntini)</h3>
+        <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 8px;">0 kcal totali - 0 alimenti inseriti</p>
+        <button class="action-btn" onclick="manageMeals()">Gestisci Pasti</button>
+    </div>
+
     <nav>
         <button class="nav-item active"><span>📊</span><span>Trend</span></button>
-        <button class="nav-item"><span>📖</span><span>Ricettario</span></button>
-        <button class="nav-item"><span>🔔</span><span>Notifiche</span></button>
-        <button class="nav-item"><span>🎨</span><span>Tema</span></button>
-        <button class="nav-item"><span>☁️</span><span>Cloud</span></button>
+        <button class="nav-item" onclick="alert('Sezione Ricettario')"><span>📖</span><span>Ricettario</span></button>
+        <button class="nav-item" onclick="alert('Notifiche e Promemoria')"><span>🔔</span><span>Notifiche</span></button>
+        <button class="nav-item" onclick="alert('Impostazioni Tema')"><span>🎨</span><span>Tema</span></button>
+        <button class="nav-item" onclick="alert('Sincronizzazione Cloud')"><span>☁️</span><span>Cloud</span></button>
     </nav>
 
     <script>
@@ -167,7 +171,8 @@
         }
 
         function openProfile() { alert("Profilo utente attivo."); }
-        function openL5S1() { alert("Sezione esercizi L5-S1 attiva."); }
+        function openL5S1() { alert("Sezione esercizi di stretching L5-S1 attiva."); }
+        function manageMeals() { alert("Apertura gestione pasti giornalieri."); }
     </script>
 </body>
 </html>
